@@ -21,7 +21,8 @@ class AstPrinter {
 
         when (node) {
             is VarStatement -> {
-                println("VarStatement: ${node.name}")
+                val typePart = if (node.declaredType != null) ": ${node.declaredType}" else ""
+                println("VarStatement: ${node.name}$typePart")
                 if (node.initializer != null) {
                     printNode(node.initializer, childIndent, true)
                 }
@@ -77,6 +78,8 @@ class AstPrinter {
             }
 
             is NumberExpression -> println("Number: ${node.value}")
+            is StringExpression -> println("String: \"${node.value}\"")
+            is BooleanExpression -> println("Boolean: ${node.value}")
             is VariableExpression -> println("Variable: ${node.name}")
             else -> println("Unknown Node: ${node::class.simpleName}")
         }

@@ -2,6 +2,7 @@ package org.kkotlyarenko.core.semantic
 
 class SemanticEnvironment(private val parent: SemanticEnvironment? = null) {
     private data class VariableInfo(
+        val type: SemanticType,
         var readCount: Int = 0,
         var writeCount: Int = 0,
         var isInitialized: Boolean = false
@@ -9,12 +10,12 @@ class SemanticEnvironment(private val parent: SemanticEnvironment? = null) {
 
     private val variables = mutableMapOf<String, VariableInfo>()
 
-    fun defineVariable(name: String): Boolean {
+    fun defineVariable(name: String, type: SemanticType, initialized: Boolean = false): Boolean {
         if (variables.containsKey(name)) {
             return false
         }
 
-        variables[name] = VariableInfo()
+        variables[name] = VariableInfo(type = type, isInitialized = initialized)
         return true
     }
 
@@ -50,6 +51,15 @@ class SemanticEnvironment(private val parent: SemanticEnvironment? = null) {
         }
 
         return parent?.isVariableInitialized(name)
+    }
+
+    fun getVariableType(name: String): SemanticType? {
+        val variableInfo = variables[name]
+        if (variableInfo != null) {
+            return variableInfo.type
+        }
+
+        return parent?.getVariableType(name)
     }
 
     fun getUnusedVariablesInCurrentScope(): List<String> {

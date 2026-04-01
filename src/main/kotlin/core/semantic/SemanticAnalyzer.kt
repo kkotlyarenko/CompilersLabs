@@ -22,27 +22,52 @@ class SemanticAnalyzer {
     fun visitStatement(statement: Statement) {
         when (statement) {
             is VarStatement -> {
-                if (statement.initializer != null) {
-                    visitExpression(statement.initializer)
+                val declaredType = if (statement.declaredType != null) {
+                    SemanticType.fromName(statement.declaredType)
+                } else {
+                    null
+                }
+
+                if (statement.declaredType != null && declaredType == null) {
+                    _errors.add("Unknown type '${statement.declaredType}' for variable '${statement.name}'.")
+                }
+
+                val initializerType = statement.initializer?.let { inferExpressionType(it) }
+
+                val variableType = when {
+                    declaredType != null -> declaredType
+                    initializerType != null -> initializerType
+                    else -> {
+                        _errors.add(
+                            "Variable '${statement.name}' must have a type annotation or initializer for static typing."
+                        )
+                        null
+                    }
+                }
+
+                if (declaredType != null && initializerType != null && declaredType != initializerType) {
+                    _errors.add(
+                        "Type mismatch in variable '${statement.name}': expected $declaredType, got $initializerType."
+                    )
                 }
 
                 val isDefinedInOuterScope = environment.isVariableDefinedInOuterScopes(statement.name)
 
-                if (!environment.defineVariable(statement.name)) {
+                if (variableType == null) {
+                    return
+                }
+
+                if (!environment.defineVariable(statement.name, variableType, initializerType != null)) {
                     _errors.add("Variable '${statement.name}' is already defined.")
                 } else {
                     if (isDefinedInOuterScope) {
                         _warnings.add("Variable '${statement.name}' shadows a variable from an outer scope.")
                     }
-
-                    if (statement.initializer != null) {
-                        environment.markVariableWritten(statement.name)
-                    }
                 }
             }
 
-            is PrintStatement -> visitExpression(statement.expression)
-            is ExpressionStatement -> visitExpression(statement.expression)
+            is PrintStatement -> inferExpressionType(statement.expression)
+            is ExpressionStatement -> inferExpressionType(statement.expression)
 
             is BlockStatement -> {
                 val previousEnvironment = environment
@@ -58,7 +83,10 @@ class SemanticAnalyzer {
             }
 
             is IfStatement -> {
-                visitExpression(statement.condition)
+                val conditionType = inferExpressionType(statement.condition)
+                if (conditionType != null && conditionType != SemanticType.BOOLEAN) {
+                    _errors.add("If condition must be Boolean, got $conditionType.")
+                }
                 visitStatement(statement.thenBranch)
                 if (statement.elseBranch != null) {
                     visitStatement(statement.elseBranch)
@@ -66,7 +94,10 @@ class SemanticAnalyzer {
             }
 
             is WhileStatement -> {
-                visitExpression(statement.condition)
+                val conditionType = inferExpressionType(statement.condition)
+                if (conditionType != null && conditionType != SemanticType.BOOLEAN) {
+                    _errors.add("While condition must be Boolean, got $conditionType.")
+                }
                 visitStatement(statement.body)
             }
 
@@ -75,35 +106,179 @@ class SemanticAnalyzer {
     }
 
     fun visitExpression(expression: Expression) {
-        when (expression) {
-            is NumberExpression, is StringExpression -> Unit
+        inferExpressionType(expression)
+    }
+
+    private fun inferExpressionType(expression: Expression): SemanticType? {
+        return when (expression) {
+            is NumberExpression -> SemanticType.NUMBER
+            is StringExpression -> SemanticType.STRING
+            is BooleanExpression -> SemanticType.BOOLEAN
 
             is VariableExpression -> {
-                if (!environment.isVariableDefined(expression.name)) {
+                val variableType = environment.getVariableType(expression.name)
+                if (variableType == null) {
                     _errors.add("Variable '${expression.name}' is not defined.")
+                    null
                 } else {
                     if (environment.isVariableInitialized(expression.name) == false) {
                         _errors.add("Variable '${expression.name}' is not initialized.")
                     }
                     environment.markVariableRead(expression.name)
+                    variableType
                 }
             }
 
             is AssignExpression -> {
-                visitExpression(expression.value)
-                if (!environment.markVariableWritten(expression.name)) {
+                val variableType = environment.getVariableType(expression.name)
+                val valueType = inferExpressionType(expression.value)
+
+                if (variableType == null) {
                     _errors.add("Variable '${expression.name}' is not defined.")
+                    null
+                } else {
+                    if (valueType != null && variableType != valueType) {
+                        _errors.add(
+                            "Type mismatch in assignment to '${expression.name}': expected $variableType, got $valueType."
+                        )
+                    }
+
+                    environment.markVariableWritten(expression.name)
+                    variableType
                 }
             }
 
             is BinaryExpression -> {
-                visitExpression(expression.left)
-                visitExpression(expression.right)
+                val leftType = inferExpressionType(expression.left)
+                val rightType = inferExpressionType(expression.right)
+                inferBinaryType(expression.operator.name, leftType, rightType)
             }
 
-            is UnaryExpression -> visitExpression(expression.right)
+            is UnaryExpression -> {
+                val rightType = inferExpressionType(expression.right)
+                inferUnaryType(expression.operator.name, rightType)
+            }
 
-            else -> _errors.add("Unsupported expression type: ${expression::class.simpleName}")
+            else -> {
+                _errors.add("Unsupported expression type: ${expression::class.simpleName}")
+                null
+            }
+        }
+    }
+
+    private fun inferBinaryType(operator: String, left: SemanticType?, right: SemanticType?): SemanticType? {
+        if (left == null || right == null) {
+            return null
+        }
+
+        return when (operator) {
+            "PLUS" -> {
+                when {
+                    left == SemanticType.NUMBER && right == SemanticType.NUMBER -> SemanticType.NUMBER
+                    left == SemanticType.STRING && right == SemanticType.STRING -> SemanticType.STRING
+                    else -> {
+                        _errors.add("Operator '+' is not defined for $left and $right.")
+                        null
+                    }
+                }
+            }
+
+            "MINUS", "STAR", "SLASH" -> {
+                if (left == SemanticType.NUMBER && right == SemanticType.NUMBER) {
+                    SemanticType.NUMBER
+                } else {
+                    _errors.add("Operator '${operatorToSymbol(operator)}' requires Number operands, got $left and $right.")
+                    null
+                }
+            }
+
+            "LT", "LTEQ", "GT", "GTEQ" -> {
+                if (left == SemanticType.NUMBER && right == SemanticType.NUMBER) {
+                    SemanticType.BOOLEAN
+                } else {
+                    _errors.add(
+                        "Operator '${operatorToSymbol(operator)}' requires Number operands, got $left and $right."
+                    )
+                    null
+                }
+            }
+
+            "EQEQ", "NEQ" -> {
+                if (left == right) {
+                    SemanticType.BOOLEAN
+                } else {
+                    _errors.add(
+                        "Operator '${operatorToSymbol(operator)}' requires operands of the same type, got $left and $right."
+                    )
+                    null
+                }
+            }
+
+            "AND", "OR" -> {
+                if (left == SemanticType.BOOLEAN && right == SemanticType.BOOLEAN) {
+                    SemanticType.BOOLEAN
+                } else {
+                    _errors.add(
+                        "Operator '${operatorToSymbol(operator)}' requires Boolean operands, got $left and $right."
+                    )
+                    null
+                }
+            }
+
+            else -> {
+                _errors.add("Unsupported binary operator '$operator'.")
+                null
+            }
+        }
+    }
+
+    private fun inferUnaryType(operator: String, right: SemanticType?): SemanticType? {
+        if (right == null) {
+            return null
+        }
+
+        return when (operator) {
+            "MINUS" -> {
+                if (right == SemanticType.NUMBER) {
+                    SemanticType.NUMBER
+                } else {
+                    _errors.add("Unary '-' requires Number operand, got $right.")
+                    null
+                }
+            }
+
+            "EXCL" -> {
+                if (right == SemanticType.BOOLEAN) {
+                    SemanticType.BOOLEAN
+                } else {
+                    _errors.add("Unary '!' requires Boolean operand, got $right.")
+                    null
+                }
+            }
+
+            else -> {
+                _errors.add("Unsupported unary operator '$operator'.")
+                null
+            }
+        }
+    }
+
+    private fun operatorToSymbol(operator: String): String {
+        return when (operator) {
+            "PLUS" -> "+"
+            "MINUS" -> "-"
+            "STAR" -> "*"
+            "SLASH" -> "/"
+            "LT" -> "<"
+            "LTEQ" -> "<="
+            "GT" -> ">"
+            "GTEQ" -> ">="
+            "EQEQ" -> "=="
+            "NEQ" -> "!="
+            "AND" -> "&&"
+            "OR" -> "||"
+            "EXCL" -> "!"
+            else -> operator
         }
     }
 

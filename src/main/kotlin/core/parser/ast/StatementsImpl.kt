@@ -6,6 +6,7 @@ class PrintStatement(val expression: Expression) : Statement()
 
 class VarStatement(
     val name: String,
+    val declaredType: String?,
     val initializer: Expression?
 ) : Statement()
 

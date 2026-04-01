@@ -2,6 +2,7 @@ package org.kkotlyarenko.core.lexer
 
 enum class TokenType{
     NUMBER,
+    BOOLEAN,
 
     ID,
     STRING,
@@ -20,6 +21,7 @@ enum class TokenType{
 
     LPAREN, RPAREN,     // ( )
     LBRACE, RBRACE,     // { }
+    COLON,              // :
     SEMICOLON,          // ;
 
     EOF

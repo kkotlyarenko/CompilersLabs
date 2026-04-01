@@ -31,14 +31,19 @@ class Parser(tokens: Iterable<Token>) {
 
     private fun parseVarDeclaration(): Statement {
         val name = consume(TokenType.ID, "Expected variable name.")
+        var declaredType: String? = null
         var initializer: Expression? = null
+
+        if (match(TokenType.COLON)) {
+            declaredType = consume(TokenType.ID, "Expected type name after ':'.").value
+        }
 
         if (match(TokenType.EQ)) {
             initializer = parseExpression()
         }
 
         consume(TokenType.SEMICOLON, "Expected ';' after variable declaration.")
-        return VarStatement(name.value, initializer)
+        return VarStatement(name.value, declaredType, initializer)
     }
 
     private fun parseIfStatement(): Statement {
@@ -193,6 +198,14 @@ class Parser(tokens: Iterable<Token>) {
         if (match(TokenType.NUMBER)) {
             val value = previous().value.toDouble()
             return NumberExpression(value)
+        }
+
+        if (match(TokenType.STRING)) {
+            return StringExpression(previous().value)
+        }
+
+        if (match(TokenType.BOOLEAN)) {
+            return BooleanExpression(previous().value.toBoolean())
         }
 
         if (match(TokenType.ID)) {

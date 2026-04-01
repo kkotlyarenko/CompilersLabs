@@ -12,7 +12,9 @@ class Lexer(input: String?) {
             "print" to TokenType.PRINT,
             "if" to TokenType.IF,
             "else" to TokenType.ELSE,
-            "while" to TokenType.WHILE
+            "while" to TokenType.WHILE,
+            "true" to TokenType.BOOLEAN,
+            "false" to TokenType.BOOLEAN
         )
 
         private val operators = mapOf(
@@ -34,6 +36,7 @@ class Lexer(input: String?) {
             ")" to TokenType.RPAREN,
             "{" to TokenType.LBRACE,
             "}" to TokenType.RBRACE,
+            ":" to TokenType.COLON,
             ";" to TokenType.SEMICOLON
         )
     }
@@ -51,6 +54,11 @@ class Lexer(input: String?) {
 
             if (current.isDigit()) {
                 tokens.add(readNumber())
+                continue
+            }
+
+            if (current == '"') {
+                tokens.add(readString())
                 continue
             }
 
@@ -117,6 +125,50 @@ class Lexer(input: String?) {
 
         val badChar = peek()
         throw Exception("[Lexer Error] Unexpected character '$badChar' at Line $startLine, Column $startCol")
+    }
+
+    private fun readString(): Token {
+        val startPos = position
+        val startLine = line
+        val startCol = column
+
+        next() // opening quote
+        val builder = StringBuilder()
+
+        while (position < input.length) {
+            val current = peek()
+
+            if (current == '"') {
+                next() // closing quote
+                return Token(TokenType.STRING, builder.toString(), startPos, startLine, startCol)
+            }
+
+            if (current == '\\') {
+                next()
+                if (position >= input.length) {
+                    break
+                }
+
+                val escaped = next()
+                when (escaped) {
+                    'n' -> builder.append('\n')
+                    't' -> builder.append('\t')
+                    'r' -> builder.append('\r')
+                    '"' -> builder.append('"')
+                    '\\' -> builder.append('\\')
+                    else -> builder.append(escaped)
+                }
+                continue
+            }
+
+            if (current == '\n' || current == '\u0000') {
+                break
+            }
+
+            builder.append(next())
+        }
+
+        throw Exception("[Lexer Error] Unterminated string at Line $startLine, Column $startCol")
     }
 
     private fun peek(): Char {

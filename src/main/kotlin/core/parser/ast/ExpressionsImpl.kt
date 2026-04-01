@@ -6,6 +6,8 @@ class NumberExpression(val value: Double) : Expression()
 
 class StringExpression(val value: String) : Expression()
 
+class BooleanExpression(val value: Boolean) : Expression()
+
 class VariableExpression(val name: String) : Expression()
 
 class BinaryExpression(
