@@ -1,6 +1,6 @@
-package org.kkotlyarenko.lab01.lexer
+package lab01.lexer
 
-import org.kkotlyarenko.core.lexer.Lexer
+import core.lexer.Lexer
 import kotlin.random.Random
 
 object Program {

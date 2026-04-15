@@ -1,6 +1,6 @@
-package org.kkotlyarenko.core.parser.ast
+package core.parser.ast
 
-import org.kkotlyarenko.core.lexer.TokenType
+import core.lexer.TokenType
 
 class NumberExpression(val value: Double) : Expression()
 

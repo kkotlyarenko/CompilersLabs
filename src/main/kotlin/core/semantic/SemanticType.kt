@@ -1,4 +1,4 @@
-package org.kkotlyarenko.core.semantic
+package core.semantic
 
 enum class SemanticType {
     NUMBER,

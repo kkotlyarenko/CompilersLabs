@@ -1,7 +1,7 @@
-package org.kkotlyarenko.lab05.interpreterDemo
+package lab05.interpreterDemo
 
-import org.kkotlyarenko.core.interpreter.Interpreter
-import org.kkotlyarenko.core.lexer.Lexer
+import core.interpreter.Interpreter
+import core.lexer.Lexer
 import org.kkotlyarenko.core.parser.Parser
 
 object Program {

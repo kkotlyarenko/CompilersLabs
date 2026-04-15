@@ -1,21 +1,21 @@
-package org.kkotlyarenko.core.interpreter
+package core.interpreter
 
-import org.kkotlyarenko.core.lexer.TokenType
-import org.kkotlyarenko.core.parser.ast.AssignExpression
-import org.kkotlyarenko.core.parser.ast.BinaryExpression
-import org.kkotlyarenko.core.parser.ast.BlockStatement
-import org.kkotlyarenko.core.parser.ast.BooleanExpression
-import org.kkotlyarenko.core.parser.ast.Expression
-import org.kkotlyarenko.core.parser.ast.ExpressionStatement
-import org.kkotlyarenko.core.parser.ast.IfStatement
-import org.kkotlyarenko.core.parser.ast.NumberExpression
-import org.kkotlyarenko.core.parser.ast.PrintStatement
-import org.kkotlyarenko.core.parser.ast.Statement
-import org.kkotlyarenko.core.parser.ast.StringExpression
-import org.kkotlyarenko.core.parser.ast.UnaryExpression
-import org.kkotlyarenko.core.parser.ast.VarStatement
-import org.kkotlyarenko.core.parser.ast.VariableExpression
-import org.kkotlyarenko.core.parser.ast.WhileStatement
+import core.lexer.TokenType
+import core.parser.ast.AssignExpression
+import core.parser.ast.BinaryExpression
+import core.parser.ast.BlockStatement
+import core.parser.ast.BooleanExpression
+import core.parser.ast.Expression
+import core.parser.ast.ExpressionStatement
+import core.parser.ast.IfStatement
+import core.parser.ast.NumberExpression
+import core.parser.ast.PrintStatement
+import core.parser.ast.Statement
+import core.parser.ast.StringExpression
+import core.parser.ast.UnaryExpression
+import core.parser.ast.VarStatement
+import core.parser.ast.VariableExpression
+import core.parser.ast.WhileStatement
 
 class Interpreter(private val output: (String) -> Unit = { println(it) }) {
     private var environment = RuntimeEnvironment()

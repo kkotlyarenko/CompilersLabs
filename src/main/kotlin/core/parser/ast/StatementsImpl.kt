@@ -1,4 +1,4 @@
-package org.kkotlyarenko.core.parser.ast
+package core.parser.ast
 
 class ExpressionStatement(val expression: Expression) : Statement()
 

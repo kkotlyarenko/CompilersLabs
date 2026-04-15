@@ -1,8 +1,8 @@
 package lab04.typesDemo
 
-import org.kkotlyarenko.core.RandomProgramGenerator
-import org.kkotlyarenko.core.lexer.Lexer
-import org.kkotlyarenko.core.semantic.SemanticAnalyzer
+import core.RandomProgramGenerator
+import core.lexer.Lexer
+import core.semantic.SemanticAnalyzer
 import org.kkotlyarenko.core.parser.Parser
 
 object Program {

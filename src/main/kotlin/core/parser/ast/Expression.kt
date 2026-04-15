@@ -1,3 +1,3 @@
-package org.kkotlyarenko.core.parser.ast
+package core.parser.ast
 
 abstract class Expression

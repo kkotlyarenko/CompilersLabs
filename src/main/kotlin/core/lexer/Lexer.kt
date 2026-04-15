@@ -1,4 +1,4 @@
-package org.kkotlyarenko.core.lexer
+package core.lexer
 
 class Lexer(input: String?) {
     private val input: String = input ?: ""

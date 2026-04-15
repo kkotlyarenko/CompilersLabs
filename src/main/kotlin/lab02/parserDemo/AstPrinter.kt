@@ -1,6 +1,19 @@
-package org.kkotlyarenko.lab02.parserDemo
+package lab02.parserDemo
 
-import org.kkotlyarenko.core.parser.ast.*
+import core.parser.ast.AssignExpression
+import core.parser.ast.BinaryExpression
+import core.parser.ast.BlockStatement
+import core.parser.ast.BooleanExpression
+import core.parser.ast.ExpressionStatement
+import core.parser.ast.IfStatement
+import core.parser.ast.NumberExpression
+import core.parser.ast.PrintStatement
+import core.parser.ast.Statement
+import core.parser.ast.StringExpression
+import core.parser.ast.UnaryExpression
+import core.parser.ast.VarStatement
+import core.parser.ast.VariableExpression
+import core.parser.ast.WhileStatement
 
 
 class AstPrinter {
@@ -15,7 +28,7 @@ class AstPrinter {
         if (node == null) return
 
         val marker = if (isLast) "└── " else "├── "
-        kotlin.io.print(indent + marker)
+        print(indent + marker)
 
         val childIndent = indent + if (isLast) "    " else "│   "
 

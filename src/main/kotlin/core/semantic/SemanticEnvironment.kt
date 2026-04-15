@@ -1,4 +1,4 @@
-package org.kkotlyarenko.core.semantic
+package core.semantic
 
 class SemanticEnvironment(private val parent: SemanticEnvironment? = null) {
     private data class VariableInfo(

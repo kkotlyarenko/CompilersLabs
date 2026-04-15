@@ -1,5 +1,7 @@
-import org.kkotlyarenko.core.RandomProgramGenerator
-import org.kkotlyarenko.core.lexer.Lexer
+package lab01.lexerDemo
+
+import core.RandomProgramGenerator
+import core.lexer.Lexer
 
 object Program {
     @JvmStatic

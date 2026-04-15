@@ -1,6 +1,20 @@
-package org.kkotlyarenko.core.semantic
+package core.semantic
 
-import org.kkotlyarenko.core.parser.ast.*
+import core.parser.ast.AssignExpression
+import core.parser.ast.BinaryExpression
+import core.parser.ast.BlockStatement
+import core.parser.ast.BooleanExpression
+import core.parser.ast.Expression
+import core.parser.ast.ExpressionStatement
+import core.parser.ast.IfStatement
+import core.parser.ast.NumberExpression
+import core.parser.ast.PrintStatement
+import core.parser.ast.Statement
+import core.parser.ast.StringExpression
+import core.parser.ast.UnaryExpression
+import core.parser.ast.VarStatement
+import core.parser.ast.VariableExpression
+import core.parser.ast.WhileStatement
 
 class SemanticAnalyzer {
     private var environment = SemanticEnvironment()
@@ -23,7 +37,7 @@ class SemanticAnalyzer {
         when (statement) {
             is VarStatement -> {
                 val declaredType = if (statement.declaredType != null) {
-                    SemanticType.fromName(statement.declaredType)
+                    SemanticType.Companion.fromName(statement.declaredType)
                 } else {
                     null
                 }

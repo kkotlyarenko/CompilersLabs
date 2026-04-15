@@ -1,4 +1,4 @@
-package org.kkotlyarenko.core.interpreter
+package core.interpreter
 
 class RuntimeEnvironment(private val parent: RuntimeEnvironment? = null) {
     private val values = mutableMapOf<String, Any?>()

@@ -1,4 +1,4 @@
-package org.kkotlyarenko.core
+package core
 
 import kotlin.random.Random
 

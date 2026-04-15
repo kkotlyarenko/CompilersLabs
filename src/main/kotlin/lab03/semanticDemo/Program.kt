@@ -1,9 +1,9 @@
 package org.kkotlyarenko.lab03.semanticDemo
 
-import org.kkotlyarenko.core.RandomProgramGenerator
-import org.kkotlyarenko.core.lexer.Lexer
+import core.RandomProgramGenerator
+import core.lexer.Lexer
 import org.kkotlyarenko.core.parser.Parser
-import org.kkotlyarenko.core.semantic.SemanticAnalyzer
+import core.semantic.SemanticAnalyzer
 
 object Program {
     private val validSampleCode = """

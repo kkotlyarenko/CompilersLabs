@@ -1,4 +1,4 @@
-package org.kkotlyarenko.core.lexer
+package core.lexer
 
 enum class TokenType{
     NUMBER,
