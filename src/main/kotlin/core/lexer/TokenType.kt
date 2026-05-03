@@ -12,6 +12,8 @@ enum class TokenType{
 
     IF, ELSE,
     WHILE,
+    FUN,
+    RETURN,
 
     // Operators
     PLUS, MINUS, STAR, SLASH,  // + - * /
@@ -23,6 +25,7 @@ enum class TokenType{
     LBRACE, RBRACE,     // { }
     COLON,              // :
     SEMICOLON,          // ;
+    COMMA,              // ,
 
     EOF
 }

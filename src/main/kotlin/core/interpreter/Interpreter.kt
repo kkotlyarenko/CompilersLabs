@@ -5,11 +5,14 @@ import core.parser.ast.AssignExpression
 import core.parser.ast.BinaryExpression
 import core.parser.ast.BlockStatement
 import core.parser.ast.BooleanExpression
+import core.parser.ast.CallExpression
 import core.parser.ast.Expression
 import core.parser.ast.ExpressionStatement
+import core.parser.ast.FunctionStatement
 import core.parser.ast.IfStatement
 import core.parser.ast.NumberExpression
 import core.parser.ast.PrintStatement
+import core.parser.ast.ReturnStatement
 import core.parser.ast.Statement
 import core.parser.ast.StringExpression
 import core.parser.ast.UnaryExpression
@@ -19,11 +22,24 @@ import core.parser.ast.WhileStatement
 
 class Interpreter(private val output: (String) -> Unit = { println(it) }) {
     private var environment = RuntimeEnvironment()
+    private var functionDepth = 0
+
+    private class ReturnSignal(val value: Any?) : RuntimeException(null, null, false, false)
+
+    private class UserFunction(
+        val declaration: FunctionStatement,
+        val closure: RuntimeEnvironment
+    )
 
     fun interpret(statements: Iterable<Statement>) {
         environment = RuntimeEnvironment()
+        functionDepth = 0
         for (statement in statements) {
-            execute(statement)
+            try {
+                execute(statement)
+            } catch (_: ReturnSignal) {
+                throw RuntimeException("'return' outside function.")
+            }
         }
     }
 
@@ -34,6 +50,19 @@ class Interpreter(private val output: (String) -> Unit = { println(it) }) {
             is VarStatement -> {
                 val value = statement.initializer?.let { evaluate(it) }
                 environment.define(statement.name, value)
+            }
+
+            is FunctionStatement -> {
+                environment.define(statement.name, UserFunction(statement, environment))
+            }
+
+            is ReturnStatement -> {
+                if (functionDepth == 0) {
+                    throw RuntimeException("'return' outside function.")
+                }
+
+                val value = statement.value?.let { evaluate(it) }
+                throw ReturnSignal(value)
             }
 
             is BlockStatement -> executeBlock(statement.statements, RuntimeEnvironment(environment))
@@ -76,6 +105,21 @@ class Interpreter(private val output: (String) -> Unit = { println(it) }) {
 
             is VariableExpression -> environment.get(expression.name)
 
+            is CallExpression -> {
+                val calleeValue = evaluate(expression.callee)
+                val function = calleeValue as? UserFunction
+                    ?: throw RuntimeException("Can call only functions.")
+
+                val args = expression.arguments.map { evaluate(it) }
+                if (args.size != function.declaration.parameters.size) {
+                    throw RuntimeException(
+                        "Function '${function.declaration.name}' expected ${function.declaration.parameters.size} args, got ${args.size}."
+                    )
+                }
+
+                callFunction(function, args)
+            }
+
             is AssignExpression -> {
                 val value = evaluate(expression.value)
                 environment.assign(expression.name, value)
@@ -94,6 +138,25 @@ class Interpreter(private val output: (String) -> Unit = { println(it) }) {
             is BinaryExpression -> evaluateBinary(expression)
 
             else -> throw RuntimeException("Unsupported expression type: ${expression::class.simpleName}")
+        }
+    }
+
+    private fun callFunction(function: UserFunction, args: List<Any?>): Any? {
+        val localEnvironment = RuntimeEnvironment(function.closure)
+        for ((index, param) in function.declaration.parameters.withIndex()) {
+            localEnvironment.define(param, args[index])
+        }
+
+        val previousDepth = functionDepth
+        functionDepth++
+
+        return try {
+            executeBlock(function.declaration.body, localEnvironment)
+            null
+        } catch (signal: ReturnSignal) {
+            signal.value
+        } finally {
+            functionDepth = previousDepth
         }
     }
 

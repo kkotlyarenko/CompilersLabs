@@ -22,3 +22,11 @@ class WhileStatement(
     val condition: Expression,
     val body: Statement
 ) : Statement()
+
+class FunctionStatement(
+    val name: String,
+    val parameters: List<String>,
+    val body: List<Statement>
+) : Statement()
+
+class ReturnStatement(val value: Expression?) : Statement()

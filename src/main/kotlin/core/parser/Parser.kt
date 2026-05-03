@@ -6,11 +6,14 @@ import core.parser.ast.AssignExpression
 import core.parser.ast.BinaryExpression
 import core.parser.ast.BlockStatement
 import core.parser.ast.BooleanExpression
+import core.parser.ast.CallExpression
 import core.parser.ast.Expression
 import core.parser.ast.ExpressionStatement
+import core.parser.ast.FunctionStatement
 import core.parser.ast.IfStatement
 import core.parser.ast.NumberExpression
 import core.parser.ast.PrintStatement
+import core.parser.ast.ReturnStatement
 import core.parser.ast.Statement
 import core.parser.ast.StringExpression
 import core.parser.ast.UnaryExpression
@@ -31,16 +34,42 @@ class Parser(tokens: Iterable<Token>) {
     }
 
     private fun parseDeclaration(): Statement {
+        if (match(TokenType.FUN)) return parseFunctionDeclaration()
         if (match(TokenType.VAR)) return parseVarDeclaration()
         return parseStatement()
     }
 
     private fun parseStatement(): Statement {
+        if (match(TokenType.RETURN)) return parseReturnStatement()
         if (match(TokenType.IF)) return parseIfStatement()
         if (match(TokenType.WHILE)) return parseWhileStatement()
         if (match(TokenType.PRINT)) return parsePrintStatement()
         if (match(TokenType.LBRACE)) return BlockStatement(parseBlock())
         return parseExpressionStatement()
+    }
+
+    private fun parseFunctionDeclaration(): Statement {
+        val name = consume(TokenType.ID, "Expected function name.")
+        consume(TokenType.LPAREN, "Expected '(' after function name.")
+
+        val parameters = mutableListOf<String>()
+        if (!check(TokenType.RPAREN)) {
+            do {
+                parameters.add(consume(TokenType.ID, "Expected parameter name.").value)
+            } while (match(TokenType.COMMA))
+        }
+
+        consume(TokenType.RPAREN, "Expected ')' after function parameters.")
+        consume(TokenType.LBRACE, "Expected '{' before function body.")
+
+        val body = parseBlock()
+        return FunctionStatement(name.value, parameters, body)
+    }
+
+    private fun parseReturnStatement(): Statement {
+        val value = if (check(TokenType.SEMICOLON)) null else parseExpression()
+        consume(TokenType.SEMICOLON, "Expected ';' after return value.")
+        return ReturnStatement(value)
     }
 
     private fun parseVarDeclaration(): Statement {
@@ -205,7 +234,29 @@ class Parser(tokens: Iterable<Token>) {
             return UnaryExpression(op, right)
         }
 
-        return parsePrimary()
+        return parseCall()
+    }
+
+    private fun parseCall(): Expression {
+        var expr = parsePrimary()
+
+        while (true) {
+            if (match(TokenType.LPAREN)) {
+                val arguments = mutableListOf<Expression>()
+                if (!check(TokenType.RPAREN)) {
+                    do {
+                        arguments.add(parseExpression())
+                    } while (match(TokenType.COMMA))
+                }
+
+                consume(TokenType.RPAREN, "Expected ')' after function arguments.")
+                expr = CallExpression(expr, arguments)
+            } else {
+                break
+            }
+        }
+
+        return expr
     }
 
     private fun parsePrimary(): Expression {

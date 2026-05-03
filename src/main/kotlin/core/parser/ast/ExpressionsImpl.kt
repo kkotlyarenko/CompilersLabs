@@ -25,3 +25,8 @@ class AssignExpression(
     val name: String,
     val value: Expression
 ) : Expression()
+
+class CallExpression(
+    val callee: Expression,
+    val arguments: List<Expression>
+) : Expression()

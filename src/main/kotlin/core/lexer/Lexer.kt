@@ -13,6 +13,8 @@ class Lexer(input: String?) {
             "if" to TokenType.IF,
             "else" to TokenType.ELSE,
             "while" to TokenType.WHILE,
+            "fun" to TokenType.FUN,
+            "return" to TokenType.RETURN,
             "true" to TokenType.BOOLEAN,
             "false" to TokenType.BOOLEAN
         )
@@ -37,7 +39,8 @@ class Lexer(input: String?) {
             "{" to TokenType.LBRACE,
             "}" to TokenType.RBRACE,
             ":" to TokenType.COLON,
-            ";" to TokenType.SEMICOLON
+            ";" to TokenType.SEMICOLON,
+            "," to TokenType.COMMA
         )
     }
 
