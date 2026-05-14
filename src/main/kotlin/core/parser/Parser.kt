@@ -1,4 +1,4 @@
-package org.kkotlyarenko.core.parser
+package core.parser
 
 import core.lexer.Token
 import core.lexer.TokenType

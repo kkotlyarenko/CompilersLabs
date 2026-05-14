@@ -2,7 +2,7 @@ package lab05.interpreterDemo
 
 import core.interpreter.Interpreter
 import core.lexer.Lexer
-import org.kkotlyarenko.core.parser.Parser
+import core.parser.Parser
 
 object Program {
     private val arithmeticDemoCode = """

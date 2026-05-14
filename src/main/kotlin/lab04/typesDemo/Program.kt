@@ -3,7 +3,7 @@ package lab04.typesDemo
 import core.RandomProgramGenerator
 import core.lexer.Lexer
 import core.semantic.SemanticAnalyzer
-import org.kkotlyarenko.core.parser.Parser
+import core.parser.Parser
 
 object Program {
     private val validSampleCode = """

@@ -2,7 +2,7 @@ package lab02.parserDemo
 
 import core.RandomProgramGenerator
 import core.lexer.Lexer
-import org.kkotlyarenko.core.parser.Parser
+import core.parser.Parser
 
 object Program {
     @JvmStatic

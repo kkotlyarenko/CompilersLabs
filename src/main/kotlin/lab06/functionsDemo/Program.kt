@@ -2,7 +2,7 @@ package lab06.functionsDemo
 
 import core.interpreter.Interpreter
 import core.lexer.Lexer
-import org.kkotlyarenko.core.parser.Parser
+import core.parser.Parser
 
 object Program {
     private val functionsDemoCode = """

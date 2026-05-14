@@ -1,8 +1,8 @@
-package org.kkotlyarenko.lab03.semanticDemo
+package lab03.semanticDemo
 
 import core.RandomProgramGenerator
 import core.lexer.Lexer
-import org.kkotlyarenko.core.parser.Parser
+import core.parser.Parser
 import core.semantic.SemanticAnalyzer
 
 object Program {
